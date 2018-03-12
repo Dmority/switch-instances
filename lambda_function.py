@@ -2,12 +2,13 @@ import boto3
 import json
 import requests
 import time
+import os
 
 def lambda_handler(event, context):
     # get parameter from parameter store
     ssm = boto3.client('ssm')
     ec2 = boto3.client('ec2')
-    sw = ssm.get_parameter(Name='prod-switch-stat')['Parameter']['Value']
+    sw = ssm.get_parameter(Name=os.environ['parameter_name'])['Parameter']['Value']
     switch_stat = json.loads(sw)
     
     # check http
@@ -48,5 +49,5 @@ def lambda_handler(event, context):
     bf_slave_id = switch_stat['slave-id']
     switch_stat['master-id'] = bf_slave_id
     switch_stat['slave-id'] = bf_master_id
-    res = ssm.put_parameter(Name='prod-switch-stat', Value=json.dumps(switch_stat), Type='String', Overwrite=True)
+    res = ssm.put_parameter(Name=os.environ['parameter_name'], Value=json.dumps(switch_stat), Type='String', Overwrite=True)
 
